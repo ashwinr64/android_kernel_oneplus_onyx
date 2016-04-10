@@ -221,6 +221,10 @@ static struct device_attribute power_supply_attrs[] = {
 /* jingchun.wang@Onlinerd.Driver,2013/12/22 Add for fastchg*/
 	POWER_SUPPLY_ATTR(fastcharger),
 #endif	//CONFIG_PIC1503_FASTCG
+	/* Local extensions */
+	POWER_SUPPLY_ATTR(usb_hc),
+	POWER_SUPPLY_ATTR(usb_otg),
+	POWER_SUPPLY_ATTR(charge_enabled),
 	/* Properties of type `const char *' */
 	POWER_SUPPLY_ATTR(model_name),
 	POWER_SUPPLY_ATTR(manufacturer),

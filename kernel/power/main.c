@@ -672,10 +672,6 @@ static struct attribute *g[] = {
 #ifdef CONFIG_PM_DEBUG
 	&pm_test_attr.attr,
 #endif
-#ifdef CONFIG_USER_WAKELOCK
-	&wake_lock_attr.attr,
-	&wake_unlock_attr.attr,
-#endif
 #endif
 #ifdef CONFIG_VENDOR_EDIT
 /* OPPO 2012-11-05 Van Modify begin for add interface start reason and boot_mode begin */

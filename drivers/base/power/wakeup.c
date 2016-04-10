@@ -130,6 +130,8 @@ EXPORT_SYMBOL_GPL(wakeup_source_destroy);
  */
 void wakeup_source_add(struct wakeup_source *ws)
 {
+	unsigned long flags;
+
 	if (WARN_ON(!ws))
 		return;
 
@@ -138,9 +140,9 @@ void wakeup_source_add(struct wakeup_source *ws)
 	ws->active = false;
 	ws->last_time = ktime_get();
 
-	spin_lock_irq(&events_lock);
+	spin_lock_irqsave(&events_lock, flags);
 	list_add_rcu(&ws->entry, &wakeup_sources);
-	spin_unlock_irq(&events_lock);
+	spin_unlock_irqrestore(&events_lock, flags);
 }
 EXPORT_SYMBOL_GPL(wakeup_source_add);
 
@@ -150,12 +152,14 @@ EXPORT_SYMBOL_GPL(wakeup_source_add);
  */
 void wakeup_source_remove(struct wakeup_source *ws)
 {
+	unsigned long flags;
+
 	if (WARN_ON(!ws))
 		return;
 
-	spin_lock_irq(&events_lock);
+	spin_lock_irqsave(&events_lock, flags);
 	list_del_rcu(&ws->entry);
-	spin_unlock_irq(&events_lock);
+	spin_unlock_irqrestore(&events_lock, flags);
 	synchronize_rcu();
 }
 EXPORT_SYMBOL_GPL(wakeup_source_remove);
@@ -665,16 +669,10 @@ void print_active_wakeup_sources(void)
 		if (ws->active) {
 			pr_info("active wakeup source: %s\n", ws->name);
 			active = 1;
-
-			//Can we do a break here? Or do we want to get all of them?
-
 		} else if (!active &&
-		(!last_activity_ws ||
-		ws->last_time.tv64 >
-		last_activity_ws->last_time.tv64)) {
-
-			//ktime_to_ns() anyone?
-
+			   (!last_activity_ws ||
+			    ktime_to_ns(ws->last_time) >
+			    ktime_to_ns(last_activity_ws->last_time))) {
 			last_activity_ws = ws;
 		}
 	}
@@ -689,7 +687,6 @@ EXPORT_SYMBOL_GPL(print_active_wakeup_sources);
 
 #endif
 /* OPPO 2013-09-17 wangjc Add end */
-
 
 /**
  * pm_wakeup_pending - Check if power transition in progress should be aborted.
@@ -713,6 +710,10 @@ bool pm_wakeup_pending(void)
 		events_check_enabled = !ret;
 	}
 	spin_unlock_irqrestore(&events_lock, flags);
+
+	if (ret)
+		print_active_wakeup_sources();
+
 	return ret;
 }
 
@@ -765,15 +766,16 @@ bool pm_get_wakeup_count(unsigned int *count, bool block)
 bool pm_save_wakeup_count(unsigned int count)
 {
 	unsigned int cnt, inpr;
+	unsigned long flags;
 
 	events_check_enabled = false;
-	spin_lock_irq(&events_lock);
+	spin_lock_irqsave(&events_lock, flags);
 	split_counters(&cnt, &inpr);
 	if (cnt == count && inpr == 0) {
 		saved_count = count;
 		events_check_enabled = true;
 	}
-	spin_unlock_irq(&events_lock);
+	spin_unlock_irqrestore(&events_lock, flags);
 	return events_check_enabled;
 }
 

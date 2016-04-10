@@ -99,3 +99,7 @@ x509.genkey
 
 # Kconfig presets
 all.config
+
+# Generated source files
+smd_rpc_sym.c
+
