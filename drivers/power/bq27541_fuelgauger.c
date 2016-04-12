@@ -38,6 +38,7 @@
 #ifdef CONFIG_VENDOR_EDIT
 /*OPPO 2013-09-22 liaofuchun add for bq27541 encryption*/
 #include <linux/random.h>
+#include <linux/wakelock.h>
 
 #include <linux/rtc.h>
 
