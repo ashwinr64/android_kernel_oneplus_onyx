@@ -1747,15 +1747,15 @@ static int bq27541_battery_remove(struct i2c_client *client)
 	return 0;
 }
 
-extern int msmrtc_alarm_read_time(struct rtc_time *tm);
+// extern int msmrtc_alarm_read_time(struct rtc_time *tm);
 static int bq27541_battery_suspend(struct i2c_client *client, pm_message_t message)
 {
 	int ret=0;
 	struct rtc_time	rtc_suspend_rtc_time;
 	struct bq27541_device_info *di = i2c_get_clientdata(client);
-	
+	static struct rtc_device *alarm_rtc_dev;
 	atomic_set(&di->suspended, 1);
-	ret = msmrtc_alarm_read_time(&rtc_suspend_rtc_time);
+	ret = rtc_read_time(alarm_rtc_dev, &rtc_suspend_rtc_time);
 	if (ret < 0) {
 		pr_err("%s: Failed to read RTC time\n", __func__);
 		return 0;
@@ -1773,9 +1773,10 @@ static int bq27541_battery_resume(struct i2c_client *client)
 	int suspend_time;
 	struct rtc_time	rtc_resume_rtc_time;
 	struct bq27541_device_info *di = i2c_get_clientdata(client);
-			
+        static struct rtc_device *alarm_rtc_dev;
+
 	atomic_set(&di->suspended, 0);
-	ret = msmrtc_alarm_read_time(&rtc_resume_rtc_time);
+	ret = rtc_read_time(alarm_rtc_dev, &rtc_resume_rtc_time);
 	if (ret < 0) {
 		pr_err("%s: Failed to read RTC time\n", __func__);
 		return 0;
