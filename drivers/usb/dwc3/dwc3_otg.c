@@ -18,8 +18,6 @@
 #include <linux/usb/hcd.h>
 #include <linux/platform_device.h>
 #include <linux/regulator/consumer.h>
-#include <linux/boot_mode.h>
-#include <linux/kthread.h>
 
 #include "core.h"
 #include "dwc3_otg.h"
@@ -517,8 +515,6 @@ int dwc3_set_ext_xceiv(struct usb_otg *otg, struct dwc3_ext_xceiv *ext_xceiv)
 	return 0;
 }
 
-
-
 static void dwc3_otg_notify_host_mode(struct usb_otg *otg, int host_mode)
 {
 	struct dwc3_otg *dotg = container_of(otg, struct dwc3_otg, otg);
@@ -534,9 +530,6 @@ static void dwc3_otg_notify_host_mode(struct usb_otg *otg, int host_mode)
 		power_supply_set_scope(dotg->psy, POWER_SUPPLY_SCOPE_DEVICE);
 }
 
-#ifdef VENDOR_EDIT
-extern int get_boot_mode(void);
-#endif
 static int dwc3_otg_set_power(struct usb_phy *phy, unsigned mA)
 {
 	static int power_supply_type;
@@ -556,12 +549,7 @@ static int dwc3_otg_set_power(struct usb_phy *phy, unsigned mA)
 	else if (dotg->charger->chg_type == DWC3_CDP_CHARGER)
 		power_supply_type = POWER_SUPPLY_TYPE_USB_CDP;
 	else if (dotg->charger->chg_type == DWC3_DCP_CHARGER ||
-			dotg->charger->chg_type == DWC3_PROPRIETARY_CHARGER
-#ifdef CONFIG_VENDOR_EDIT
-			// add by xcb
-			|| dotg->charger->chg_type == DWC3_FLOATED_CHARGER
-#endif
-			)
+			dotg->charger->chg_type == DWC3_PROPRIETARY_CHARGER)
 		power_supply_type = POWER_SUPPLY_TYPE_USB_DCP;
 	else
 		power_supply_type = POWER_SUPPLY_TYPE_UNKNOWN;
@@ -575,18 +563,8 @@ static int dwc3_otg_set_power(struct usb_phy *phy, unsigned mA)
 		return 0;
 
 	dev_info(phy->dev, "Avail curr from USB = %u\n", mA);
-#ifdef VENDOR_EDIT
-      if(get_boot_mode()==MSM_BOOT_MODE__RF){
-		/* Disable charging */
-		if (power_supply_set_online(dotg->psy, false))
-			goto psy_error;
-		/* Set max current limit */
-		if (power_supply_set_current_limit(dotg->psy, 0))
-			goto psy_error;	 
-    }else if (dotg->charger->max_power <= 2 && mA > 2) {
-#else
+
 	if (dotg->charger->max_power <= 2 && mA > 2) {
-#endif
 		/* Enable charging */
 		if (power_supply_set_online(dotg->psy, true))
 			goto psy_error;
@@ -798,9 +776,6 @@ static void dwc3_otg_sm_work(struct work_struct *w)
 					work = 1;
 					break;
 				case DWC3_SDP_CHARGER:
-#ifdef CONFIG_VENDOR_EDIT
-					dwc3_otg_set_power(phy, 500);
-#endif
 					dwc3_otg_start_peripheral(&dotg->otg,
 									1);
 					phy->state = OTG_STATE_B_PERIPHERAL;
@@ -821,15 +796,7 @@ static void dwc3_otg_sm_work(struct work_struct *w)
 					 */
 					if (dotg->charger_retry_count ==
 						max_chgr_retry_count) {
-						/*
-						 * Modified set_power current
-						 * by Jeff Chen@2015/06/16.
-						 * For non-standard charger,
-						 * treat it as FLOATED CHARGER
-						 * and set max charging current to
-						 * 500mA instead of 0.
-						 */
-						dwc3_otg_set_power(phy, 500);
+						dwc3_otg_set_power(phy, 0);
 						pm_runtime_put_sync(phy->dev);
 						break;
 					}
@@ -933,6 +900,7 @@ static void dwc3_otg_sm_work(struct work_struct *w)
 		queue_delayed_work(system_nrt_wq, &dotg->sm_work, delay);
 }
 
+
 /**
  * dwc3_otg_reset - reset dwc3 otg registers.
  *
@@ -987,6 +955,7 @@ int dwc3_otg_init(struct dwc3 *dwc)
 	u32	reg;
 	int ret = 0;
 	struct dwc3_otg *dotg;
+
 	dev_dbg(dwc->dev, "dwc3_otg_init\n");
 
 	/*
@@ -1062,6 +1031,7 @@ int dwc3_otg_init(struct dwc3 *dwc)
 				dotg->irq, ret);
 		goto err3;
 	}
+
 	pm_runtime_get(dwc->dev);
 
 	return 0;
