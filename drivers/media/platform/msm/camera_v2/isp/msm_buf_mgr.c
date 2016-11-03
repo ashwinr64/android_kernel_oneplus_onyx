@@ -148,8 +148,8 @@ static int msm_isp_prepare_isp_buf(struct msm_isp_buf_mgr *buf_mgr,
 			goto ion_map_error;
 		}
 		if (ion_map_iommu(buf_mgr->client, mapped_info->handle,
-				domain_num, 0, SZ_4K,
-				0, (unsigned long *)&(mapped_info->paddr),
+				buf_mgr->iommu_domain_num, 0, SZ_4K,
+				0, &(mapped_info->paddr),
 				&(mapped_info->len), 0, 0) < 0) {
 			rc = -EINVAL;
 			pr_err("%s: cannot map address", __func__);
