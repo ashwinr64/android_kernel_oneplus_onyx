@@ -1036,6 +1036,12 @@ config TOUCHSCREEN_SYNAPTICS_S3508_I2C_RMI
 	help
 	  This enables support for s3508 I2C RMI touchscreen devices.
 
+config TOUCHSCREEN_SYNAPTICS_S3508_I2C_RMI_ONYX
+	tristate "Synaptics s3508 I2C touchscreen device (Onyx Variant)"
+	depends on I2C
+	help
+	  This enables support for Onyx variant of s3508 I2C RMI touchscreen devices.
+
 source "drivers/input/touchscreen/gt9xx/Kconfig"
 
 endif
