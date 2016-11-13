@@ -1299,15 +1299,10 @@
 	qcom,vibrator@c000 {
 		compatible = "qcom,qpnp-vibrator";
 		reg = <0xc000 0x100>;
-/* OEM taokai 2016-05-13 add begin for vibrator*/
 		qcom,vib-timeout-ms = <15000>;
 		qcom,vib-vtg-level-mV = <3100>;
-/* OEM taokai 2016-05-13 add end for vibrator*/
-		label = "vibrator";
-/* OEM taokai 2016-05-13 modify begin for vibrator*/
-	//	status = "disabled";
+		qcom,vib-vtg-min-mV = <1900>;
 		status = "okay";
-/* OEM taokai 2016-05-13 modify end for vibrator*/
 	};
 
 	qcom,leds@d000 {

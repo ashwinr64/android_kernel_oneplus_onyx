@@ -107,6 +107,7 @@
 			//qcom,memory-reservation-size = <0x800000>;
 			qcom,memory-reservation-size = <0xFF0000>;
 			qcom,memblock-reserve = <0x03200000 0x01E00000>;
+			linux,contiguous-region = <&fb_mem>;
 		};
 
 		mdss_fb1: qcom,mdss_fb_external {
@@ -147,7 +148,7 @@
 		//#endif
 		qcom,platform-strength-ctrl = [ff 06];
 		qcom,platform-bist-ctrl = [00 00 b1 ff 00 00];
-		qcom,platform-regulator-settings = [07 09 03 00 20 00 01];
+		qcom,platform-regulator-settings = [03 09 03 00 20 00 01];
 		qcom,platform-lane-config = [00 00 00 00 00 00 00 01 97
 			00 00 00 00 00 00 00 01 97
 			00 00 00 00 00 00 00 01 97
@@ -208,7 +209,7 @@
 		qcom,mdss-mdp = <&mdss_mdp>;
 		qcom,platform-strength-ctrl = [ff 06];
 		qcom,platform-bist-ctrl = [00 00 b1 ff 00 00];
-		qcom,platform-regulator-settings = [07 09 03 00 20 00 01];
+		qcom,platform-regulator-settings = [03 09 03 00 20 00 01];
 		qcom,platform-lane-config = [00 00 00 00 00 00 00 01 97
 			00 00 00 00 00 00 00 01 97
 			00 00 00 00 00 00 00 01 97
