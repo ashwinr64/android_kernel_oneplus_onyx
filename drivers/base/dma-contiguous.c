@@ -221,6 +221,35 @@ no_mem:
 
 /*****************************************************************************/
 
+#ifdef VENDOR_EDIT
+//hefaxi@bsp,2016/05/24, add for support param partition
+void init_param_mem_base_size(phys_addr_t base, unsigned long size);
+void __init oem_contiguous_reserve_area(phys_addr_t size, phys_addr_t *res_base,
+				       phys_addr_t limit, const char *name)
+{
+	phys_addr_t base = *res_base;
+
+	pr_debug("%s(size %lx, base %pa, limit %pa)\n", __func__,
+		 (unsigned long)size, &base,
+		 &limit);
+
+	if (base) {
+		if (memblock_is_region_reserved(base, size) ||
+		    memblock_reserve(base, size) < 0) {
+                printk("OEM: reserve fail EBUSY(%s, base:%pa)\n", name, &base);
+		}
+		else{
+		    printk("OEM: Found %s, memory base %pa, size %ld MiB, limit %pa\n", name,&base, (unsigned long)size / SZ_1M, &limit);
+                    if(!strncmp(name, "param_mem",9))
+                            init_param_mem_base_size(base,size);
+                }
+	} else {
+		printk("OEM: (%s) reserve address NULL\n", name);
+	}
+
+}
+#endif /*VENDOR_EDIT*/
+
 #ifdef CONFIG_OF
 int __init cma_fdt_scan(unsigned long node, const char *uname,
 				int depth, void *data)
@@ -235,6 +264,11 @@ int __init cma_fdt_scan(unsigned long node, const char *uname,
 	unsigned long addr_cells = dt_root_addr_cells;
 	bool remove;
 	char *status;
+
+#ifdef VENDOR_EDIT
+//hefaxi@bsp,2016/05/24, add for support param partition
+    bool oem_reserve;
+#endif /*VENDOR_EDIT*/
 
 	if (!of_get_flat_dt_prop(node, "linux,reserve-contiguous-region", NULL))
 		return 0;
@@ -270,11 +304,21 @@ int __init cma_fdt_scan(unsigned long node, const char *uname,
 	if (prop)
 		limit = be32_to_cpu(prop[0]);
 
-	remove =
-	     of_get_flat_dt_prop(node, "linux,remove-completely", NULL) ? 1 : 0;
+#ifdef VENDOR_EDIT
+//hefaxi@bsp,2016/05/24, add for support param partition
+	oem_reserve = of_get_flat_dt_prop(node, "oem,reserve-region", NULL) ? 1 : 0;
+	if(oem_reserve){
+		oem_contiguous_reserve_area(size, &base, limit, name);
+		return 0;
+	}
+#endif /*VENDOR_EDIT*/
 
-	pr_info("Found %s, memory base %pa, size %ld MiB, limit %pa\n", uname,
-			&base, (unsigned long)size / SZ_1M, &limit);
+        remove =
+             of_get_flat_dt_prop(node, "linux,remove-completely", NULL) ? 1 : 0;
+
+        pr_info("Found %s, memory base %pa, size %ld MiB, limit %pa\n", uname,
+                        &base, (unsigned long)size / SZ_1M, &limit);
+
 	dma_contiguous_reserve_area(size, &base, limit, name,
 					in_system, remove);
 

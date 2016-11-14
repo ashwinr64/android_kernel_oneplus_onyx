@@ -50,6 +50,7 @@
 
 #include <mach/socinfo.h>
 #include <mach/msm_rtb.h>
+#include <linux/wakeup_reason.h>
 
 union gic_base {
 	void __iomem *common_base;
