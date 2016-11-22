@@ -1176,8 +1176,6 @@ static int mdss_dsi_cmd_dma_tx(struct mdss_dsi_ctrl_pdata *ctrl,
 	unsigned long size;
 	dma_addr_t addr;
 	struct mdss_dsi_ctrl_pdata *mctrl = NULL;
-	unsigned long size;
-	dma_addr_t addr;
 
 	bp = tp->data;
 
