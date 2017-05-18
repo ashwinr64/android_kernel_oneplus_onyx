@@ -157,8 +157,8 @@ static void set_dload_mode(int on)
 		       dload_mode_addr + sizeof(unsigned int));
 		#ifdef CONFIG_VENDOR_EDIT
 		//Add this to value for dump KMSG.bin
-		__raw_writel(on ? (virt_to_phys(__log_buf)) : 0, dload_mode_addr + sizeof(unsigned int) *10 );
-		__raw_writel(on ? __LOG_BUF_LEN : 0, dload_mode_addr + sizeof(unsigned int) *11 );
+		//__raw_writel(on ? (virt_to_phys(__log_buf)) : 0, dload_mode_addr + sizeof(unsigned int) *10 );
+		//__raw_writel(on ? __LOG_BUF_LEN : 0, dload_mode_addr + sizeof(unsigned int) *11 );
 		#endif
 		mb();
 		dload_mode_enabled = on;
