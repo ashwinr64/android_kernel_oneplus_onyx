@@ -535,6 +535,24 @@ static void add_all_freq_table(unsigned int freq)
 	all_freq_table->freq_table[all_freq_table->table_size++] = freq;
 }
 
+static void cpufreq_allstats_create(unsigned int cpu)
+{
+	int i , j = 0;
+	unsigned int alloc_size, count = 0;
+	struct cpufreq_frequency_table *table = cpufreq_frequency_get_table(cpu);
+	struct all_cpufreq_stats *all_stat;
+	bool sort_needed = false;
+
+	if (!table)
+		return;
+
+	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+		unsigned int freq = table[i].frequency;
+		if (freq == CPUFREQ_ENTRY_INVALID)
+			continue;
+		count++;
+	}
+
 static void cpufreq_allstats_create(unsigned int cpu,
 		struct cpufreq_frequency_table *table, int count)
 {
@@ -753,10 +771,11 @@ static int __init cpufreq_stats_init(void)
 		cpufreq_update_policy(cpu);
 	}
 
+	create_all_freq_table();
 	ret = sysfs_create_file(cpufreq_global_kobject,
 			&_attr_all_time_in_state.attr);
 	if (ret)
-		pr_warn("Cannot create sysfs file for cpufreq stats\n");
+		pr_warn("Error creating sysfs file for cpufreq stats\n");
 
 	ret = sysfs_create_file(cpufreq_global_kobject,
 			&_attr_current_in_state.attr);
